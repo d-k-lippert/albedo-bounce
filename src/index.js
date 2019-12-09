@@ -12,15 +12,12 @@ import backgroundImage from "./assets/images/ocean.jpg";
 import backgroundImage1 from "./assets/images/cloud-sprite.png";
 import Photon from "./photon.js";
 import Cloud from "./cloud.js";
+import Generator from "./cloud-generator.js";
 //import cloudImg from "./assets/cloud-sprite.png"
 
 
 
 let userInputs;
-
-
-let photon; // Game object for the photon
-let photonRed;
 let repeatPhotons;         // Game object for the cloud
 let ices;         // Game object for the bricks
 let scoreText;      // Game object for showing score
@@ -33,7 +30,6 @@ let hot;
 let ok;
 let cold;
 let demoText;
-let cloudRepeat;
 let background;
 let photons;
 let myTimer;
@@ -41,8 +37,7 @@ let atmo;
 let clouds;
 let freq;
 let ok2;
-let numberOfUsers;
-
+let generator;
 let timer = 30;
 let score = 250;      // Variable holding the number of scores
 
@@ -56,6 +51,10 @@ const config = {
   type: Phaser.AUTO,
   width: 1200,
   height: 500,
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  },
   backgroundImage: '#222',
   physics: {
     default: 'arcade',
@@ -85,7 +84,6 @@ function preload() {
   this.load.image('photon', photonYellow);
   this.load.image('ices', iceblock);
   this.load.image('cloud', cloudimage);
-
   this.load.image('photonRed', photonRedIMG);
   this.load.image('hot', hottnes);
   this.load.image('ok', okness);
@@ -93,8 +91,6 @@ function preload() {
   this.load.image('slide', sliderImage);
   this.load.image('background', backgroundImage);
   this.load.image('background-1', backgroundImage1);
-
-
 }
 
 /*To create the world we need to add a create function that will add all game objects to our scene.
@@ -116,49 +112,14 @@ we defined at the beginning, since we are going to make use of it later. To cent
 
 
 function create() {
-  //scale evenly
   photons = [];
   clouds = [];
-  //photons.push(new  Photon(this));
+  generator = new Generator(this);
+  userInputs = new Map ();
 
-  //photonObject = new Photon(this);
-  /*photonObject.setDepth(10);
-  photonObject.setCollideWorldBounds(true)
-  photonObject.setBounce(1);
-  photonObject.setScale(0.2);*/
-    userInputs = new Map ();
-
-
-
-  /* screenable.events. */
   background = this.physics.add.image(0, 0, 'background')
       .setImmovable()
       .setScale(1.5);
-/*
-für die wolken-schwärme
-  let particles = this.add.particles('cloud');
-
-  particles.createEmitter({
-    frame: { frames: [ 0, 1, 2 ], cycle: true, quantity: 4 },
-    x: -70,
-    y: { min: 100, max: 500, steps: 8 },
-    lifespan: 5000,
-    speedX: { min: 200, max: 400, steps: 8 },
-    quantity: 4,
-    frequency: 500
-  });
-*/
-
-  /*cloud = this.physics.add.image(this.cameras.main.centerX, this.game.config.height - 400, 'cloud')
-      .setImmovable()
-      .setScale(0.8);*/
-
-
-  /*photon = this.physics.add.image(this.game.config.width - (400 * Math.random()), this.game.config.height - 400, 'photon')
-      .setCollideWorldBounds(true)
-      .setBounce(1)
-      .setScale(0.2);*/
-
 
   hot = this.physics.add.image(50, 100, 'hot')
       .setImmovable()
@@ -187,20 +148,39 @@ für die wolken-schwärme
   });
 //in zweiter scene wieder enabled
   //screenable.controller.disableInputForAll('slider','2');
-screenable.events.onNewUser.subscribe((user) =>{
-  userInputs.set(user.userID,{
-    currentValue: 50
-  })
-  screenable.controller.disableInput(user,'slider','2');
-});
-  screenable.events.onSliderChange.subscribe((user,slider)=>{
-    userInputs.get(user.userID).currentValue = slider.getValue();
-    // console.log('slider pos', slider.identifier ,slider.getValue());
-      numberOfUsers = screenable.countOnlineUsers();
-     console.log("usernumbers ", screenable.countOnlineUsers());
-    console.log("userinput", userInputs.get(user.userID).currentValue );
-    freq = slider.getValue()
+  /* screenable.events. */
+  screenable.events.onNewUser.subscribe((user) =>{
+    userInputs.set(user.userID,{
+      currentValue: 50
+    })
+    screenable.controller.disableInput(user,'slider','2');
   });
+    screenable.events.onSliderChange.subscribe((user,slider)=>{
+      if(slider.identifier=='1'){
+
+          if(userInputs.has(user.userID)){
+
+            userInputs.get(user.userID).currentValue = slider.getValue();
+            //console.log("usernumbers ", screenable.countOnlineUsers());
+            //console.log("userinput", userInputs.get(user.userID).currentValue );
+
+            let userInputSum= 0;
+
+            for (let [key, value] of userInputs)
+            {
+              userInputSum+=value.currentValue;
+              //console.log(key + " = " + value.currentValue);
+            }
+            //console.log(userInputSum);
+            freq = (((userInputSum*2)/screenable.countOnlineUsers())+40);
+          }
+          else
+          {
+              userInputs.set(user.userID,{
+                currentValue: 50})
+          }
+      }
+    });
 
 
   /*For them, we are using a staticGroup. The key references our asset’s name.
@@ -256,8 +236,6 @@ screenable.events.onNewUser.subscribe((user) =>{
 
 
 
-  //this.physics.add.collider(photon, ices, iceHit, null, this);
-  //this.physics.add.collider(photon, cloud, cloudHit, null, this);
   /*
   * To make it act like a button we can register inputs by calling setInteractive.
   * Adding useHandCursor will show a pointer when hovered instead of the default cursor.
@@ -273,17 +251,10 @@ screenable.events.onNewUser.subscribe((user) =>{
       .on('pointerdown', () => clock())
       .on('pointerover', () => startButton.setStyle({ fill: '#f39c12' }))
       .on('pointerout', () => startButton.setStyle({ fill: '#FFF' }))
-      .on('pointerdown', () => repeatCloud.call(this))
       .on('pointerdown', () => startRepeater.call(this));
-
 
   this.physics.add.collider(photons, ices, iceHit, null, this);
   this.physics.add.collider(photons, atmo, hitAtmo, null, this);
-  //this.physics.add.collider(photons, cloud, cloudHit, null, this);
-  //this.physics.add.collider(photons, clouds, cloudHit, null, this);
-  //this.physics.world.removeCollider(cloudCollider);
-
-
 }
 
 
@@ -296,46 +267,37 @@ Finally, to move the cloud we can add an event listener on the whole scene with 
 Inside the callback, we set the cloud’s x position to the mouse x position.
 To avoid moving it outside of the screen, we force pointer.x to be between a min and a max value.
 This is done using the Math.Clamp method.*/
-function startGame() {
+function startGame()
+{
   startButton.destroy();
   ok2.setVelocityX(40);
-    console.log("usernumbers ", screenable.countOnlineUsers());
+  console.log("usernumbers ", screenable.countOnlineUsers());
   rotation = 'left';
-
-
-/*
-  this.input.on('pointermove', pointer => {
-    cloud.x = Phaser.Math.Clamp(pointer.x, cloud.width / 2, this.game.config.width - cloud.width / 2);
-  });
-
-*/
-
+  generator.generatorStartCloudproducing();
 }
 
+function clock() {
+  myTimer = setInterval(myClock, 1000);
 
+  function myClock()
+  {
+    document.getElementById('demoText');;
+    demoText.setText(`Countdown: ${--timer}`);
 
-  function clock() {
-    myTimer = setInterval(myClock, 1000);
-
-    function myClock() {
-      document.getElementById('demoText');;
-      demoText.setText(`Countdown: ${--timer}`);
-
-      if (score<=50 || score>=450) {
-        clearInterval(myTimer);
-        //photons.destroy();
-        //photon.destroy();
-        gameOverText.setVisible(true);
-      }
-      else if(timer === 0 ){
-        wonTheGameText.setVisible(true);
-        clearInterval(myTimer);
-        //photons.destroy();
-        //photon.destroy();
-      }
+    if (score<=50 || score>=450)
+    {
+      clearInterval(myTimer);
+      //photons.destroy();
+      //photon.destroy();
+      gameOverText.setVisible(true);
     }
-
+    else if(timer === 0 )
+    {
+      wonTheGameText.setVisible(true);
+      clearInterval(myTimer);
+    }
   }
+}
 
 /*
 * We change the brick’s texture and after a short time, we shrink it till it disappears.
@@ -352,24 +314,17 @@ As you can see, we have a bunch of configuration options to set.
 Once the animation completes, we can get rid of the brick and also do a check.
 * If there’s no more bricks on the screen, we can remove the photon and display the “You won!” message.*/
 
-function iceHit(photons, ice) {
-
+function iceHit(photons, ice)
+{
   photons.setTexture('photonRed');
-  this.physics.add.collider(photons, clouds, cloudHit, null, this);
-
-
-  this.tweens.add({
-    targets: ice,
-    ease: 'Power1',
-    //scaleX: 1,
-    //scaleY: 1,
-    //angle: 180,
-    //duration: 1500,
-    //delay: 250,
-    onComplete: () => {
-      //ice.destroy();
-    }
-  });
+  this.physics.add.collider(photons, generator.getClouds(), cloudHit, null, this);
+  this.tweens.add(
+    {
+      targets: ice,
+      ease: 'Power1',
+      onComplete: () =>
+      {}
+    });
 }
 
 /*Hitting the cloud
@@ -386,13 +341,11 @@ We could actually get away without adding any functionality for hitting the clou
 
 
 function cloudHit(photons) {
-
   score -= 25;
   slide.setPosition(60, score);
   scoreText.setText(`Score: ${score}`);
   photons.destroy();
 }
-
 
 function hitAtmo(photons) {
   score += 25;
@@ -400,7 +353,6 @@ function hitAtmo(photons) {
   scoreText.setText(`Score: ${score}`);
   photons.destroy();
 }
-
 
 function startRepeater() {
   repeatPhotons = this.time.addEvent({
@@ -413,159 +365,74 @@ function startRepeater() {
 }
 
 function updatePhotons(){
-
-  for (let i = 0; i < photons.length; i++){
-
-    if(score<=50 || score>=450 || timer ===0) {
+  for (let i = 0; i < photons.length; i++)
+  {
+    if(score<=50 || score>=450 || timer ===0)
+    {
       gameOverText.setVisible(true);
       photons[i].destroy();
       repeatPhotons.destroy();
     }
-
-    if (photons[i].y === 0) {
-
-      screenable.controller.disableInputForAll("joystick","a",1500)
-
-      if (score > 50 && score < 450) {
+    if (photons[i].y === 0)
+    {
+      if (score > 50 && score < 450)
+      {
         scoreText.setText(`Score: ${score}`);
         slide.setPosition(60, score);
-      } else {
+      }
+      else
+        {
         photons[i].destroy();
         gameOverText.setVisible(true);
-          ok2.destroy();
+        ok2.setVisible(false);
+        ok2.setVelocityX(0);
       }
     }
     photons[i].update();
   }
 }
 
-function pushPhotons (){
-
-  //console.log('push');
+function pushPhotons ()
+{
   photons.push(new  Photon(this));
   updatePhotons()
-
-}
-
-
-
-function repeatCloud() {
-  cloudRepeat= this.time.addEvent({
-    delay: 2000,
-    callback: pushClouds,
-    loop: true,
-    callbackScope: this
-  });
-  update();
-}
-
-function updateClouds(){
-
-    for (let i = 0; i < clouds.length; i++) {
-
-        clouds[clouds.length-1].update(freq);
-
-
-    if(score<=50 || score>=450 || timer ===0) {
-      //photons.destroy();
-      // photon.destroy();
-      gameOverText.setVisible(true);
-
-
-      /*if (rotation) {
-        photons[i].rotation = rotation === 'left' ?  photon[i].rotation - .05 : photon[i].rotation + .05;
-        // photon.rotation = rotation === 'left' ?  photon.rotation - .2 : photon.rotation + .2;
-      }*/
-      //clouds[i].update();
-      clouds[i].destroy();
-      cloudRepeat.destroy();
-      ok2.destroy();
-    }
-  }
-}
-
-function pushClouds(){
-
-
-    clouds.push(new  Cloud(this));
-
-    updateClouds()
-
 }
 
 function updateRunner(){
-    if(score>325){
+    if(score>325 && score<450)
+    {
         ok2.setTexture('cold')
     }
-    else if(score<=325 && score >= 225){
+    else if(score<=325 && score >= 225)
+    {
         ok2.setTexture('ok')
     }
-    else{
+    else if(score<200 && score>=75)
+    {
         ok2.setTexture('hot')
     }
-}
-
-
-
-
-
-
-
-function update() {
-
-if(score===250){
-  background.setTexture('background');
-}
-else if(score===300){
-  background.setTexture('background-1');
-}
-    updateRunner();
-    //screenable.controller.disableInputForAll("joystick","a",1500)
-
-
-
-
-
-
-
-    //photonObject.destroy();
-
-
-/*
-  if (photon.y < cloud.y - 150) {
-    score += 50;
-
-
-    if (score > 50 && score < 450) {
-      scoreText.setText(`Score: ${score}`);
-      slide.setPosition(60, score);
-      photon.setPosition(this.game.config.width - (400 * Math.random()), this.game.config.height - 400)
-          .setTexture('photon')
-          .setVelocity(-100, 100);
-
-    } else {
-      //photons.destroy();
-      photon.destroy();
-
-      gameOverText.setVisible(true);
+    else{
+        ok2.setVelocityX(0);
     }
-  }
-*/
-
-
 }
 
-//Wolke soll von oben durchlässig sein                        erledigt
-//score soll richtig funktionieren                            erledigt
-//wolken über delay steuerbar mit Smartphone-Eingabe
-//wolken soll nicht bouncen - nur photon absorbieren          erledigt
-//Photonen sollen animiert sein
-//wolke soll animiert sein
-//Hintergrund soll sich ändern abhängig vom Score
-//sun area in einer ecke
-//wolken sollen nach spielende stoppen zu spawnen             erledigt
-//Photonen sollen nach spielende stoppen zu spawnen           erledigt
+function update()
+{
 
-
+  if(score<=50 || score>=450 || timer ===0)
+  {
+    generator.generatorStopCloudproducing();
+  }
+  generator.update(freq);
+  if(score===250)
+  {
+    background.setTexture('background');
+  }
+  else if(score===300)
+  {
+    background.setTexture('background-1');
+  }
+  updateRunner();
+}
 
 const game = new Phaser.Game(config);

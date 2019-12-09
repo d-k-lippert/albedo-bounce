@@ -24,6 +24,11 @@ class Cloud extends Phaser.Physics.Arcade.Sprite {
         this.setImmovable();
     }
 
+    scaleSetter(factor){
+
+            this.setScale((factor)/100);
+
+    }
 
     update(freq){
 
