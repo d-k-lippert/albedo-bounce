@@ -11,7 +11,7 @@ class Photon extends Phaser.Physics.Arcade.Sprite {
 
 
         //this.body.velocity
-        super(scene,window.innerWidth-(600*Math.random()),100,'photon');
+        super(scene,window.innerWidth-(window.innerWidth*Math.random()),100,'photon');
         this.scene = scene;
         this.inAtmo = false;
         scene.physics.add.image('photon', photonYellow);

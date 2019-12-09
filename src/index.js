@@ -11,6 +11,8 @@ import sliderImage from "./assets/images/slider.png";
 import backgroundImage from "./assets/images/ocean.jpg";
 import backgroundImage1 from "./assets/images/cloud-sprite.png";
 import Photon from "./photon.js";
+import bg from "./assets/images/mountains-back.png";
+import bgMid from "./assets/images/mountains-mid1.png";
 import Cloud from "./cloud.js";
 import Generator from "./cloud-generator.js";
 //import cloudImg from "./assets/cloud-sprite.png"
@@ -39,7 +41,10 @@ let freq;
 let ok2;
 let generator;
 let timer = 30;
-let score = 250;      // Variable holding the number of scores
+let score = 250;// Variable holding the number of scores
+let mountainsBack;
+let mountainsMid;
+let bgStartMoving = false;
 
 // We are going to use these styles for texts
 const textStyle = {
@@ -91,6 +96,8 @@ function preload() {
   this.load.image('slide', sliderImage);
   this.load.image('background', backgroundImage);
   this.load.image('background-1', backgroundImage1);
+  this.load.image('mountainsBack', bg);
+  this.load.image('mountainsMid', bgMid);
 }
 
 /*To create the world we need to add a create function that will add all game objects to our scene.
@@ -120,6 +127,14 @@ function create() {
   background = this.physics.add.image(0, 0, 'background')
       .setImmovable()
       .setScale(1.5);
+
+  mountainsBack = this.add.tileSprite(0,0,game.config.width,game.config.height, 'mountainsBack')
+      .setOrigin(0,0)
+      .setScrollFactor(0);
+
+  mountainsMid = this.add.tileSprite(0,0,game.config.width,game.config.height, 'mountainsMid')
+      .setOrigin(0,0)
+      .setScrollFactor(0);
 
   hot = this.physics.add.image(50, 100, 'hot')
       .setImmovable()
@@ -274,6 +289,7 @@ function startGame()
   console.log("usernumbers ", screenable.countOnlineUsers());
   rotation = 'left';
   generator.generatorStartCloudproducing();
+  bgStartMoving = true;
 }
 
 function clock() {
@@ -402,28 +418,44 @@ function updateRunner(){
     if(score>325 && score<450)
     {
         ok2.setTexture('cold')
+        ok2.setVelocityX(0);
     }
     else if(score<=325 && score >= 225)
     {
         ok2.setTexture('ok')
+        ok2.setVelocityX(40);
     }
-    else if(score<200 && score>=75)
+    else if(score<225 && score>=75)
     {
         ok2.setTexture('hot')
+        ok2.setVelocityX(0);
+    }
+    else if(ok2.getCurrentPosition()){
+        ok2.setVelocityX(0);
     }
     else{
         ok2.setVelocityX(0);
+        bgStartMoving=false;
     }
+}
+
+function moveBackground(){
+  mountainsBack.tilePositionX-= 0.1;
+  mountainsMid.tilePositionX-= .5;
 }
 
 function update()
 {
 
+  generator.update(freq);
+
+  if(bgStartMoving){
+    moveBackground();
+  }
   if(score<=50 || score>=450 || timer ===0)
   {
     generator.generatorStopCloudproducing();
   }
-  generator.update(freq);
   if(score===250)
   {
     background.setTexture('background');
