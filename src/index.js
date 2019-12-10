@@ -13,6 +13,7 @@ import backgroundImage1 from "./assets/images/cloud-sprite.png";
 import Photon from "./photon.js";
 import bg from "./assets/images/mountains-back.png";
 import bgMid from "./assets/images/mountains-mid1.png";
+import runnerSprite from "./assets/images/maennchen.png";
 import Cloud from "./cloud.js";
 import Generator from "./cloud-generator.js";
 //import cloudImg from "./assets/cloud-sprite.png"
@@ -45,6 +46,10 @@ let score = 250;// Variable holding the number of scores
 let mountainsBack;
 let mountainsMid;
 let bgStartMoving = false;
+let runner;
+let startMovingRunner=false;
+let initializeMovement=false;
+let playIdleOnce=false;
 
 // We are going to use these styles for texts
 const textStyle = {
@@ -98,6 +103,13 @@ function preload() {
   this.load.image('background-1', backgroundImage1);
   this.load.image('mountainsBack', bg);
   this.load.image('mountainsMid', bgMid);
+
+  this.load.spritesheet('runnerSpriteSheet', runnerSprite, {
+      frameWidth:64,
+      frameHeight:64
+  });
+
+
 }
 
 /*To create the world we need to add a create function that will add all game objects to our scene.
@@ -161,6 +173,31 @@ function create() {
     gridAlign: { width: 30, cellWidth: 60, cellHeight: 1, x: this.cameras.main.centerX - 600, y: -130},
     visible:false
   });
+
+    ices = this.physics.add.staticGroup({
+        key: 'ices',
+        frameQuantity: 30,
+        gridAlign: { width: 300, cellWidth: 60, cellHeight: 60, x: this.cameras.main.centerX - 600, y: 450}
+    });
+
+    runner=this.add.sprite(50, 450, 'runnerSpriteSheet');
+    this.anims.create({
+        key: 'runToTheRight',
+        frames: this.anims.generateFrameNumbers('runnerSpriteSheet',{start:143, end:151 }),
+        frameRate: 20,
+        repeat: -1
+    });
+    this.anims.create({
+        key: 'idle',
+        frames: this.anims.generateFrameNumbers('runnerSpriteSheet',{start:91, end:98}),
+        frameRate: 10,
+        repeat: -1
+    });
+
+    runner.play('idle');
+
+
+
 //in zweiter scene wieder enabled
   //screenable.controller.disableInputForAll('slider','2');
   /* screenable.events. */
@@ -187,7 +224,7 @@ function create() {
               //console.log(key + " = " + value.currentValue);
             }
             //console.log(userInputSum);
-            freq = (((userInputSum*2)/screenable.countOnlineUsers())+40);
+            freq = (((userInputSum*3)/screenable.countOnlineUsers())+40);
           }
           else
           {
@@ -208,11 +245,7 @@ function create() {
   The image itself is 50x50px and we want 5px paddings on each side so we can go with a value of 60.
   To center it horizontally, we get centerX - (half of the width of the group).
   Lastly I also positioned it 100px from the top.*/
-  ices = this.physics.add.staticGroup({
-    key: 'ices',
-    frameQuantity: 30,
-    gridAlign: { width: 300, cellWidth: 60, cellHeight: 60, x: this.cameras.main.centerX - 600, y: 450}
-  });
+
 
 
 
@@ -290,6 +323,9 @@ function startGame()
   rotation = 'left';
   generator.generatorStartCloudproducing();
   bgStartMoving = true;
+  startMovingRunner=true;
+  initializeMovement=true;
+  playIdleOnce=true;
 }
 
 function clock() {
@@ -414,57 +450,66 @@ function pushPhotons ()
   updatePhotons()
 }
 
+function stopRunner() {
+    startMovingRunner=false;
+    if(playIdleOnce===false){
+        runner.play('idle');
+        playIdleOnce=true;
+    }
+}
+
+function moveRunner(runner, speed){
+    runner.x+=speed;
+    if(playIdleOnce){
+        runner.play('runToTheRight');
+        playIdleOnce=false;
+    }
+    //runner.play('moveToTheRight');
+}
+
 function updateRunner(){
+
+    if(startMovingRunner){
+        moveRunner(runner, .5);
+
+    }
+
     if(score>325 && score<450)
     {
-        ok2.setTexture('cold')
-        ok2.setVelocityX(0);
+        stopRunner();
     }
-    else if(score<=325 && score >= 225)
+    else if(score<=325 && score >= 225 && initializeMovement)
     {
-        ok2.setTexture('ok')
-        ok2.setVelocityX(40);
+        startMovingRunner=true;
     }
     else if(score<225 && score>=75)
     {
-        ok2.setTexture('hot')
-        ok2.setVelocityX(0);
-    }
-    else if(ok2.getCurrentPosition()){
-        ok2.setVelocityX(0);
+        stopRunner();
     }
     else{
-        ok2.setVelocityX(0);
         bgStartMoving=false;
     }
 }
 
 function moveBackground(){
-  mountainsBack.tilePositionX-= 0.1;
-  mountainsMid.tilePositionX-= .5;
+  mountainsBack.tilePositionX+= 0.1;
+  mountainsMid.tilePositionX+= .5;
 }
+
 
 function update()
 {
+    generator.update(freq);
 
-  generator.update(freq);
+    if(bgStartMoving){
+        moveBackground();
+    }
+    if(score<=50 || score>=450 || timer ===0)
+    {
+        generator.generatorStopCloudproducing();
+    }
 
-  if(bgStartMoving){
-    moveBackground();
-  }
-  if(score<=50 || score>=450 || timer ===0)
-  {
-    generator.generatorStopCloudproducing();
-  }
-  if(score===250)
-  {
-    background.setTexture('background');
-  }
-  else if(score===300)
-  {
-    background.setTexture('background-1');
-  }
-  updateRunner();
+    updateRunner();
 }
 
 const game = new Phaser.Game(config);
