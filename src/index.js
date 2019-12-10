@@ -8,8 +8,8 @@ import hottnes from "./assets/images/hot.png";
 import okness from "./assets/images/ok.png";
 import coldness from "./assets/images/cold.png";
 import sliderImage from "./assets/images/slider.png";
-import backgroundImage from "./assets/images/ocean.jpg";
-import backgroundImage1 from "./assets/images/cloud-sprite.png";
+import backgroundImage from "./assets/images/arctic-bg/sky.png";
+import groundImage from "./assets/images/arctic-bg/ground.png";
 import Photon from "./photon.js";
 import bg from "./assets/images/mountains-back.png";
 import bgMid from "./assets/images/mountains-mid1.png";
@@ -50,6 +50,7 @@ let runner;
 let startMovingRunner=false;
 let initializeMovement=false;
 let playIdleOnce=false;
+let ground;
 
 // We are going to use these styles for texts
 const textStyle = {
@@ -59,8 +60,8 @@ const textStyle = {
 
 const config = {
   type: Phaser.AUTO,
-  width: 1200,
-  height: 500,
+  width: 1920,
+  height: 1080,
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH
@@ -93,6 +94,7 @@ const config = {
 function preload() {
   this.load.image('photon', photonYellow);
   this.load.image('ices', iceblock);
+  this.load.image('ground', groundImage);
   this.load.image('cloud', cloudimage);
   this.load.image('photonRed', photonRedIMG);
   this.load.image('hot', hottnes);
@@ -100,7 +102,6 @@ function preload() {
   this.load.image('cold', coldness);
   this.load.image('slide', sliderImage);
   this.load.image('background', backgroundImage);
-  this.load.image('background-1', backgroundImage1);
   this.load.image('mountainsBack', bg);
   this.load.image('mountainsMid', bgMid);
 
@@ -136,9 +137,9 @@ function create() {
   generator = new Generator(this);
   userInputs = new Map ();
 
-  background = this.physics.add.image(0, 0, 'background')
-      .setImmovable()
-      .setScale(1.5);
+  background = this.add.tileSprite(0,0,game.config.width,game.config.height, 'background')
+      .setOrigin(0,0)
+      .setScrollFactor(0);
 
   mountainsBack = this.add.tileSprite(0,0,game.config.width,game.config.height, 'mountainsBack')
       .setOrigin(0,0)
@@ -148,24 +149,26 @@ function create() {
       .setOrigin(0,0)
       .setScrollFactor(0);
 
-  hot = this.physics.add.image(50, 100, 'hot')
+  hot = this.physics.add.image(50, game.config.height/4, 'hot')
       .setImmovable()
-      .setScale(0.175);
+      .setScale(0.4);
 
-  ok = this.physics.add.image(50, 250, 'ok')
+  ok = this.physics.add.image(50, game.config.height/2, 'ok')
       .setImmovable()
-      .setScale(0.180);
+      .setScale(0.360);
 
   ok2 = this.physics.add.image(0, 450, 'ok')
-      .setScale(0.180)
+      .setScale(0.360)
       .setDepth(10);
 
-  cold = this.physics.add.image(50, 400, 'cold')
+  cold = this.physics.add.image(50, game.config.height*3/4, 'cold')
       .setImmovable()
-      .setScale(0.25);
+      .setScale(0.5);
 
   slide = this.physics.add.image(60, 250, 'slide')
-      .setScale(0.25);
+      .setScale(0.5);
+
+
 
   atmo = this.physics.add.staticGroup({
     key: 'ices',
@@ -177,10 +180,16 @@ function create() {
     ices = this.physics.add.staticGroup({
         key: 'ices',
         frameQuantity: 30,
-        gridAlign: { width: 300, cellWidth: 60, cellHeight: 60, x: this.cameras.main.centerX - 600, y: 450}
+        gridAlign: { width: 300, cellWidth: 60, cellHeight: 60, x: this.cameras.main.centerX - 900, y: this.game.config.height-150}
     });
 
-    runner=this.add.sprite(50, 450, 'runnerSpriteSheet');
+    ground =this.add.tileSprite(0,0,game.config.width,game.config.height, 'ground')
+        .setOrigin(0, 0)
+        .setScrollFactor(0);
+
+
+
+    runner=this.add.sprite(50, game.config.height-200, 'runnerSpriteSheet');
     this.anims.create({
         key: 'runToTheRight',
         frames: this.anims.generateFrameNumbers('runnerSpriteSheet',{start:143, end:151 }),
@@ -193,6 +202,8 @@ function create() {
         frameRate: 10,
         repeat: -1
     });
+    runner.scaleX= 3;
+    runner.scaleY= 3;
 
     runner.play('idle');
 
