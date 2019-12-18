@@ -1,37 +1,37 @@
 import photonYellow from "./assets/images/photon-yellow.png";
 import iceblock from "./assets/images/ice.png";
-import groundImage from "./assets/images/arctic-bg/ground.png";
+import groundDesert from "./assets/images/desert-layers/ground.png";
 import cloudimage from "./assets/images/cloud.png";
 import groundBounce from "./assets/images/winter_ground_layer2.png";
 import photonRedIMG from "./assets/images/photon-red.png";
 import sliderImage from "./assets/images/slider.png";
-import backgroundImage from "./assets/images/arctic-bg/sky.png";
-import bg from "./assets/images/arctic-bg/mountains.png";
-import bgMid from "./assets/images/arctic-bg/ground2.png";
+import backgroundSky from "./assets/images/desert-layers/sky.png";
+import bgDesert from "./assets/images/desert-layers/pyramid.png";
+import bgGround02 from "./assets/images/desert-layers/bg-ground02.png";
 import runnerSprite from "./assets/images/maennchen.png";
 import Generator from "./cloud-generator";
 import {screenable} from "./screenable";
 import Photon from "./photon";
 
-export default class GameScene extends Phaser.Scene {
+export default class LevelTwoScene extends Phaser.Scene {
 
 
     constructor ()
     {
-        super('GameScene');
+        super('LevelTwoScene');
     }
 
     preload ()
     {
         this.load.image('photon', photonYellow);
         this.load.image('ices', iceblock);
-        this.load.image('ground', groundImage);
+        this.load.image('groundDesert', groundDesert);
         this.load.image('cloud', cloudimage);
         this.load.image('photonRed', photonRedIMG);
         this.load.image('slide', sliderImage);
-        this.load.image('background', backgroundImage);
-        this.load.image('mountainsBack', bg);
-        this.load.image('mountainsMid', bgMid);
+        this.load.image('backgroundSky', backgroundSky);
+        this.load.image('bgDesert', bgDesert);
+        this.load.image('bgGround02', bgGround02);
         this.load.image('groundBounce', groundBounce);
 
         this.load.spritesheet('runnerSpriteSheet', runnerSprite, {
@@ -49,7 +49,7 @@ export default class GameScene extends Phaser.Scene {
         };
 
         this.triggerGame=false;
-        this.triggerWonGame=false;
+
         this.score=500;
         this.destroyWidth=this.game.config.width + 200;
         this.photons = [];
@@ -59,15 +59,15 @@ export default class GameScene extends Phaser.Scene {
         this.triggerGameOver = false;
         this.showWonGame = false;
 
-        this.background = this.add.tileSprite(0,0,this.game.config.width,this.game.config.height, 'background')
+        this.background = this.add.tileSprite(0,0,this.game.config.width,this.game.config.height, 'backgroundSky')
             .setOrigin(0,0)
             .setScrollFactor(0);
 
-        this.mountainsBack = this.add.tileSprite(0,0,this.game.config.width,this.game.config.height, 'mountainsBack')
+        this.mountainsBack = this.add.tileSprite(0,0,this.game.config.width,this.game.config.height, 'bgDesert')
             .setOrigin(0,0)
             .setScrollFactor(0);
 
-        this.mountainsMid = this.add.tileSprite(0,0,this.game.config.width,this.game.config.height, 'mountainsMid')
+        this.mountainsMid = this.add.tileSprite(0,0,this.game.config.width,this.game.config.height, 'bgGround02')
             .setOrigin(0,0)
             .setScrollFactor(0);
 
@@ -96,7 +96,7 @@ export default class GameScene extends Phaser.Scene {
             gridAlign: { width: 300, cellWidth: 60, cellHeight: 60, x: this.cameras.main.centerX - 900, y: this.game.config.height-150}
         });*/
 
-        this.ground =this.add.tileSprite(0,0,this.game.config.width,this.game.config.height, 'ground')
+        this.ground =this.add.tileSprite(0,0,this.game.config.width,this.game.config.height, 'groundDesert')
             .setOrigin(0, 0)
             .setScrollFactor(0);
 
@@ -332,7 +332,7 @@ export default class GameScene extends Phaser.Scene {
 
     switchToGameOver() {
         if(this.triggerGameOver===false){
-             this.time.addEvent({
+            this.time.addEvent({
                 delay: 3000,
                 callback: this.switchToLostScene,
                 callbackScope: this,
@@ -355,17 +355,17 @@ export default class GameScene extends Phaser.Scene {
     }
 
     switchToLostScene(){
-            this.scene.start('GameOverScene')
+        this.scene.start('GameOverScene')
     }
 
     switchToWonScene(){
-            this.scene.start('LevelTwoScene')
+        this.scene.start('GameWonScene')
     }
 
-     moveBackground(){
-         this.mountainsBack.tilePositionX+= 0.1;
-         this.mountainsMid.tilePositionX+= .5;
-         this.ground.tilePositionX+= 1;
+    moveBackground(){
+        this.mountainsBack.tilePositionX+= 0.1;
+        this.mountainsMid.tilePositionX+= .5;
+        this.ground.tilePositionX+= 1;
     }
 
     checkForWonGame(){
@@ -382,7 +382,7 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
-     update()
+    update()
     {
         this.generator.update(this.freq,this.destroyWidth);
 
@@ -392,12 +392,12 @@ export default class GameScene extends Phaser.Scene {
         if(this.score<=25 || this.score>=975)
         {
             this.generator.generatorStopCloudproducing();
-                this.stopRunner();
-                this.bgStartMoving=false;
-                this.CoolDown.destroy();
-                if(this.triggerGameOver===false){
-                    this.switchToGameOver();
-                }
+            this.stopRunner();
+            this.bgStartMoving=false;
+            this.CoolDown.destroy();
+            if(this.triggerGameOver===false){
+                this.switchToGameOver();
+            }
         }
         this.checkForWonGame();
         this.updateRunner();

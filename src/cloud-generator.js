@@ -33,18 +33,21 @@ export default class Generator {
         this.isProducingClouds=false;
     }
 
-    destroyClouds(){
+    destroyClouds(destroyWidth){
         for (let i = 0; i < this.clouds.length; i++) {
-
-                this.clouds[i].destroy();
+            if(this.clouds[this.clouds.length-1].x===destroyWidth){
+                this.clouds[this.clouds.length-1].destroy();
+                console.log('wolke zerstört');
+            }
         }
     }
 
-    update(freq){
+
+    update(freq,destroyWidth){
 
 
         if((this.counter > freq ) && this.isProducingClouds){
-            let newCloud = new Cloud(this.scene)
+            let newCloud = new Cloud(this.scene);
             newCloud.scaleSetter(this.sizeNextCloud);
             this.clouds.push(newCloud);
 
@@ -52,6 +55,7 @@ export default class Generator {
                 this.clouds[0].destroy()
                 this.clouds.shift()
             }
+            //this.destroyClouds(destroyWidth);
             this.counter=0;
         }
         else{

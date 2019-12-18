@@ -356,8 +356,6 @@ function clock() {
     if (score<=50 || score>=450)
     {
       clearInterval(myTimer);
-      //photons.destroy();
-      //photon.destroy();
       gameOverText.setVisible(true);
     }
     else if(timer === 0 )

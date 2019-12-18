@@ -1,6 +1,8 @@
 import Phaser from "phaser";
 import IntroScene from  "./intro-scene";
 import GameScene from  "./game-scene";
+import GameOverScene from "./game-over-scene";
+import LevelTwoScene from "./level-2.js";
 //import cloudImg from "./assets/cloud-sprite.png"
 
 const config = {
@@ -26,7 +28,9 @@ const config = {
   },
   scene: [
       IntroScene,
-      GameScene
+      GameScene,
+      GameOverScene,
+      LevelTwoScene
   ]
 };
 
