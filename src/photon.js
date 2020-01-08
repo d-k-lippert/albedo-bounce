@@ -18,7 +18,8 @@ class Photon extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         scene.physics.add.existing(this);
 
-        this.setDepth(10);
+        this.alpha=0.7;
+        this.setDepth(0);
         this.body.setCollideWorldBounds(true)
         this.body.setBounce(1);
         this.setScale(0.2);

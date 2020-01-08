@@ -5,16 +5,24 @@ export default class IntroScene extends Phaser.Scene {
     constructor ()
     {
         super('IntroScene');
+        this.video1= null;
+
     }
 
     preload ()
     {
+        this.load.video('introVid', "./src/assets/images/introvid.mp4");
         console.log("intro works")
 
     }
 
     create ()
     {
+        this.video1 = this.add.video(960,540,"introVid");
+        this.video1.setMute(true);
+        this.video1.play(true);
+        this.video1.setLoop(true);
+
         this.textStyle = {
             font: 'bold 18px Arial',
             fill: '#FFF'
@@ -27,7 +35,13 @@ export default class IntroScene extends Phaser.Scene {
             this.userInputs.set(user.userID,{
                 currentValue: 50
             })
+            screenable.controller.disableInput(user,'slider','1');
             screenable.controller.disableInput(user,'slider','2');
+        });
+        this.unsub = screenable.events.onButtonPress.subscribe((user, button)=>{
+            this.triggerGame=true;
+            this.unsub();
+            this.scene.start('GameScene');
         });
         screenable.events.onSliderChange.subscribe((user,slider)=>{
             if(slider.identifier=='1'){

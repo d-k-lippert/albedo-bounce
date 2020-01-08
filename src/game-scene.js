@@ -1,12 +1,14 @@
 import photonYellow from "./assets/images/photon-yellow.png";
 import iceblock from "./assets/images/ice.png";
-import groundImage from "./assets/images/arctic-bg/ground.png";
+import groundImage from "./assets/images/meadow-layers/ground.png";
+import frostGroundImage from "./assets/images/arctic-bg/ground.png";
 import cloudimage from "./assets/images/cloud.png";
 import groundBounce from "./assets/images/winter_ground_layer2.png";
 import photonRedIMG from "./assets/images/photon-red.png";
 import sliderImage from "./assets/images/slider.png";
 import backgroundImage from "./assets/images/arctic-bg/sky.png";
 import bg from "./assets/images/arctic-bg/mountains.png";
+import bg1 from "./assets/images/arctic-bg/mountains-copy.png";
 import bgMid from "./assets/images/arctic-bg/ground2.png";
 import runnerSprite from "./assets/images/maennchen.png";
 import Generator from "./cloud-generator";
@@ -26,11 +28,13 @@ export default class GameScene extends Phaser.Scene {
         this.load.image('photon', photonYellow);
         this.load.image('ices', iceblock);
         this.load.image('ground', groundImage);
+        this.load.image('artic-ground', frostGroundImage);
         this.load.image('cloud', cloudimage);
         this.load.image('photonRed', photonRedIMG);
         this.load.image('slide', sliderImage);
         this.load.image('background', backgroundImage);
         this.load.image('mountainsBack', bg);
+        this.load.image('mountainsBackFrost', bg1);
         this.load.image('mountainsMid', bgMid);
         this.load.image('groundBounce', groundBounce);
 
@@ -59,17 +63,60 @@ export default class GameScene extends Phaser.Scene {
         this.triggerGameOver = false;
         this.showWonGame = false;
 
-        this.background = this.add.tileSprite(0,0,this.game.config.width,this.game.config.height, 'background')
+        //dynamic Background variables
+        this.beginningSettingBackground=true;
+        this.mountainsFrostOnce=true;
+        this.mountainsMeltOnce= false;
+
+        this.groundFrostOnce = true;
+        this.groundMeltOnce = false;
+
+
+        this.background = this.add.tileSprite(0,0,this.game.config.width,this.game.config.height,
+            'background')
             .setOrigin(0,0)
             .setScrollFactor(0);
 
-        this.mountainsBack = this.add.tileSprite(0,0,this.game.config.width,this.game.config.height, 'mountainsBack')
+        //Normal Mountains
+        this.mountainsBack = this.add.tileSprite(0,0,this.game.config.width,this.game.config.height,
+            'mountainsBack')
+            .setOrigin(0,0)
+            .setScrollFactor(0)
+            .setAlpha(1);
+
+        this.mountainsBackFrost = this.add.tileSprite(0,0,this.game.config.width,this.game.config.height,
+            'mountainsBackFrost')
+            .setOrigin(0,0)
+            .setScrollFactor(0)
+            .setAlpha(0);
+        this.fadeToFrostMountains=this.tweens.add(
+            {
+                targets:this.mountainsBackFrost,
+                alpha:{from:0, to:1},
+                ease:'Linear',
+                duration:1000,
+                repeat: 0,
+                yoyo: false,
+                paused: true
+            });
+
+        this.fadeToNormalMountains=this.tweens.add(
+            {
+                targets:this.mountainsBackFrost,
+                alpha:{from:1, to:0},
+                ease:'Linear',
+                duration:1000,
+                repeat: 0,
+                yoyo: false,
+                paused: true
+            }
+        );
+
+        this.mountainsMid = this.add.tileSprite(0,0,this.game.config.width,this.game.config.height,
+            'mountainsMid')
             .setOrigin(0,0)
             .setScrollFactor(0);
 
-        this.mountainsMid = this.add.tileSprite(0,0,this.game.config.width,this.game.config.height, 'mountainsMid')
-            .setOrigin(0,0)
-            .setScrollFactor(0);
 
         this.slide = this.physics.add.image(60, 500, 'slide')
             .setScale(0.5);
@@ -95,14 +142,46 @@ export default class GameScene extends Phaser.Scene {
             frameQuantity: 30,
             gridAlign: { width: 300, cellWidth: 60, cellHeight: 60, x: this.cameras.main.centerX - 900, y: this.game.config.height-150}
         });*/
-
         this.ground =this.add.tileSprite(0,0,this.game.config.width,this.game.config.height, 'ground')
             .setOrigin(0, 0)
-            .setScrollFactor(0);
+            .setScrollFactor(0)
+            .setDepth(1);
+
+
+        this.FrostGround =this.add.tileSprite(0,0,this.game.config.width,this.game.config.height, 'artic-ground')
+            .setOrigin(0, 0)
+            .setScrollFactor(0)
+            .setDepth(1);
+
+        this.fadeToFrostGround=this.tweens.add(
+            {
+                targets:this.FrostGround,
+                alpha:{from:0, to:1},
+                ease:'Linear',
+                duration:1000,
+                repeat: 0,
+                yoyo: false,
+                paused: true
+            });
+        this.fadeToMeltGround=this.tweens.add(
+            {
+                targets:this.FrostGround,
+                alpha:{from:0, to:1},
+                ease:'Linear',
+                duration:1000,
+                repeat: 0,
+                yoyo: false,
+                paused: true
+            });
 
 
 
-        this.runner=this.add.sprite(50, this.game.config.height-200, 'runnerSpriteSheet');
+
+
+
+
+        this.runner=this.add.sprite(50, this.game.config.height-200, 'runnerSpriteSheet')
+            .setDepth(10);
         this.anims.create({
             key: 'runToTheRight',
             frames: this.anims.generateFrameNumbers('runnerSpriteSheet',{start:143, end:151 }),
@@ -125,7 +204,10 @@ export default class GameScene extends Phaser.Scene {
 //in zweiter scene wieder enabled
         //screenable.controller.disableInputForAll('slider','2');
         /* screenable.events. */
+        screenable.controller.disableInputForAll('button', 's');
+
         screenable.events.onNewUser.subscribe((user) =>{
+            screenable.controller.disableInput(user,'button','s');
             this.userInputs.set(user.userID,{
                 currentValue: 50
             })
@@ -202,12 +284,13 @@ export default class GameScene extends Phaser.Scene {
         this.playIdleOnce=true;
         this.startRepeater.call(this);
         this.repeatCoolDown.call(this);
+        //this.fadeToFrost.play();
     }
 
 
     repeatCoolDown(){
         this.CoolDown = this.time.addEvent({
-            delay: 2000,
+            delay: 3000,
             callback: this.coolDown,
             loop: true,
             callbackScope: this
@@ -216,7 +299,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     coolDown(){
-        this.score += 25;
+        this.score += 50;
         this.slide.setPosition(60, this.score);
         this.scoreText.setText(`Score: ${this.score}`);
         }
@@ -224,7 +307,7 @@ export default class GameScene extends Phaser.Scene {
 
     iceHit(photons,groundBounce)
     {
-        this.score -= 25;
+        this.score -= 50;
         this.slide.setPosition(60, this.score);
         this.scoreText.setText(`Score: ${this.score}`);
         photons.setTexture('photonRed');
@@ -241,7 +324,9 @@ export default class GameScene extends Phaser.Scene {
      cloudHit() {
          this.slide.setPosition(60, this.score);
          this.scoreText.setText(`Score: ${this.score}`);
-    }
+         //this.fadeToNormal.play();
+
+     }
 
      hitAtmo(photons) {
          this.score += 25;
@@ -252,7 +337,7 @@ export default class GameScene extends Phaser.Scene {
 
      startRepeater() {
          this.repeatPhotons = this.time.addEvent({
-            delay: 1000,
+            delay: 4000,
             callback: this.pushPhotons,
             loop: true,
             callbackScope: this
@@ -364,12 +449,13 @@ export default class GameScene extends Phaser.Scene {
 
      moveBackground(){
          this.mountainsBack.tilePositionX+= 0.1;
+         this.mountainsBackFrost.tilePositionX+=0.1;
          this.mountainsMid.tilePositionX+= .5;
          this.ground.tilePositionX+= 1;
     }
 
     checkForWonGame(){
-        if(this.runner.x===this.game.config.width/2){
+        if(this.runner.x===this.game.config.width){
             this.showWonGame=true;
             this.bgStartMoving=false;
             this.stopRunner();
@@ -382,13 +468,80 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
+    meltMountain()
+    {
+
+        if(this.mountainsMeltOnce===false){
+            this.fadeToNormalMountains.play();
+            this.mountainsMeltOnce=true;
+            this.mountainsFrostOnce=false;
+        }
+    }
+
+    frostMountain()
+    {
+        if(this.mountainsFrostOnce===false){
+            this.fadeToFrostMountains.play();
+            this.mountainsFrostOnce=true;
+            this.mountainsMeltOnce=false;
+        }
+    }
+
+
+    meltGround(){
+        if(this.groundMeltOnce===false){
+            this.fadeToMeltGround.play();
+            this.groundMeltOnce=true;
+            this.groundFrostOnce=false;
+        }
+    }
+
+    frostGround(){
+        if(this.groundFrostOnce===false){
+            this.fadeToFrostGround.play();
+            this.groundFrostOnce=true;
+            this.groundMeltOnce=false;
+        }
+    }
+
+
+
+    checkTemperature()
+    {
+        if(this.score>=600)
+        {
+            this.frostMountain();
+            this.frostGround();
+        }
+        else
+        {
+            this.meltMountain();
+            this.meltGround()
+        }
+/*
+        if(this.mountainsStartFrosting && this.mountainsFrostOnce){
+            this.fadeToFrost.play();
+            this.mountainsFrostOnce = false;
+        }
+        if(this.mountainsStartMelting && this.mountainsMeltOnce){
+            this.fadeToNormal.play();
+            this.mountainsMeltOnce = false;
+        }
+        */
+
+    }
+
+
      update()
     {
+        this.checkTemperature();
+
         this.generator.update(this.freq,this.destroyWidth);
 
         if(this.bgStartMoving){
             this.moveBackground();
         }
+
         if(this.score<=25 || this.score>=975)
         {
             this.generator.generatorStopCloudproducing();
@@ -396,7 +549,7 @@ export default class GameScene extends Phaser.Scene {
                 this.bgStartMoving=false;
                 this.CoolDown.destroy();
                 if(this.triggerGameOver===false){
-                    this.switchToGameOver();
+                    //this.switchToGameOver();
                 }
         }
         this.checkForWonGame();
