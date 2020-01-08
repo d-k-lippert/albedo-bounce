@@ -11,9 +11,9 @@ class Cloud extends Phaser.Physics.Arcade.Sprite {
 
 
         //this.body.velocity
-        super(scene,50,100,'cloud');
+        super(scene,50,100,'cloudImg');
         this.scene = scene;
-        scene.physics.add.image('cloud', cloudImg);
+        scene.physics.add.image('cloudImg', cloudImg);
         scene.add.existing(this);
         scene.physics.add.existing(this);
 

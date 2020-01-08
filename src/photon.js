@@ -1,5 +1,5 @@
 
-import photonYellow from "./assets/images/photon-yellow.png";
+import photonYellowImg from "./assets/images/photon-yellow.png";
 
 
 class Photon extends Phaser.Physics.Arcade.Sprite {
@@ -11,10 +11,10 @@ class Photon extends Phaser.Physics.Arcade.Sprite {
 
 
         //this.body.velocity
-        super(scene,window.innerWidth-(window.innerWidth*Math.random()),100,'photon');
+        super(scene,window.innerWidth-(window.innerWidth*Math.random()),100,'photonYellowImg');
         this.scene = scene;
         this.inAtmo = false;
-        scene.physics.add.image('photon', photonYellow);
+        scene.physics.add.image('photonYellowImg', photonYellowImg);
         scene.add.existing(this);
         scene.physics.add.existing(this);
 
