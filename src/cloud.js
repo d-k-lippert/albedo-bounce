@@ -11,8 +11,10 @@ class Cloud extends Phaser.Physics.Arcade.Sprite {
 
 
         //this.body.velocity
-        super(scene,50,100,'cloudImg');
+        super(scene,50,100, 'cloudImg');
         this.scene = scene;
+
+
         scene.physics.add.image('cloudImg', cloudImg);
         scene.add.existing(this);
         scene.physics.add.existing(this);
@@ -33,7 +35,6 @@ class Cloud extends Phaser.Physics.Arcade.Sprite {
     update(freq){
 
         this.setScale((freq)/100);
-
     }
 
 }
