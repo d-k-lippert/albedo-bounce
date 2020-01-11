@@ -19,6 +19,7 @@ import iceblock from "./assets/images/ice.png";
 import groundBounce from "./assets/images/winter_ground_layer2.png";
 import sliderImage from "./assets/images/slider.png";
 import scaleImage from "./assets/images/scale.png";
+import flagImg from "./assets/images/flag.png";
 
 //import bgMid from "./assets/images/arctic-bg/ground2.png";
 import runnerSprite from "./assets/images/allsprites.png";
@@ -57,6 +58,8 @@ export default class GameScene extends Phaser.Scene {
         this.load.image('scaleImg', scaleImage);
         //this.load.image('mountainsMid', bgMid);
         this.load.image('groundBounce', groundBounce);
+
+        this.load.image('flagImg', flagImg);
 
         this.load.spritesheet('runnerSpriteSheet', runnerSprite, {
             frameWidth:96,
@@ -310,6 +313,11 @@ export default class GameScene extends Phaser.Scene {
 
         this.scale = this.physics.add.image((this.game.config.width/2) ,this.game.config.height-90 , 'scaleImg')
             .setScale(0.5, 0.35)
+            .setDepth(11);
+
+        this.physics.add.image((this.game.config.width-20) ,this.game.config.height-240 , 'flagImg')
+            .setScale(0.5, 0.35)
+            .setRotation()
             .setDepth(11);
 
 

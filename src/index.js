@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import IntroScene from  "./intro-scene";
+import TutorialScene from  "./tutorial-scene";
 import GameScene from  "./game-scene";
 import GameOverScene from "./game-over-scene";
 import LevelTwoScene from "./level-2.js";
@@ -28,6 +29,7 @@ const config = {
   },
   scene: [
       IntroScene,
+      TutorialScene,
       GameScene,
       GameOverScene,
       LevelTwoScene

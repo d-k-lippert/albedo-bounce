@@ -1,24 +1,24 @@
 import {screenable} from "./screenable";
 
-export default class IntroScene extends Phaser.Scene {
+export default class TutorialScene extends Phaser.Scene {
 
     constructor ()
     {
-        super('IntroScene');
+        super('TutorialScene');
         this.video1= null;
 
     }
 
     preload ()
     {
-        this.load.video('introVid', "./src/assets/images/introvid.mp4");
+        this.load.video('tutorialVid', "./src/assets/images/tutorialvid.mp4");
         console.log("intro works")
 
     }
 
     create ()
     {
-        this.video1 = this.add.video(960,540,"introVid");
+        this.video1 = this.add.video(960,540,"tutorialVid");
         this.video1.setMute(true);
         this.video1.play(true);
         this.video1.setLoop(true);
@@ -41,7 +41,7 @@ export default class IntroScene extends Phaser.Scene {
         this.unsub = screenable.events.onButtonPress.subscribe((user, button)=>{
             this.triggerGame=true;
             this.unsub();
-            this.scene.start('TutorialScene');
+            this.scene.start('GameScene');
         });
         screenable.events.onSliderChange.subscribe((user,slider)=>{
             if(slider.identifier=='1'){
@@ -49,7 +49,7 @@ export default class IntroScene extends Phaser.Scene {
                 if(this.userInputs.has(user.userID)){
                     if(slider.getValue()===100 && this.triggerGame===false){
                         this.triggerGame=true;
-                        this.scene.start('TutorialScene')
+                        this.scene.start('GameScene')
                         //this.startGame();
                     }
                     this.userInputs.get(user.userID).currentValue = slider.getValue();
@@ -69,13 +69,13 @@ export default class IntroScene extends Phaser.Scene {
                 }
             }
         });
-
+/*
         this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Start game', this.textStyle)
             .setOrigin(0.5)
             .setPadding(10)
             .setStyle({ backgroundColor: '#111' })
             .setInteractive({ useHandCursor: true });
-
+*/
     }
     update(){
 
