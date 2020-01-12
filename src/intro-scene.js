@@ -11,7 +11,7 @@ export default class IntroScene extends Phaser.Scene {
 
     preload ()
     {
-        this.load.video('introVid', "./src/assets/images/introvid.mp4");
+        this.load.video('introVid', "./src/assets/images/introvid_final.mp4");
         console.log("intro works")
 
     }
