@@ -306,18 +306,18 @@ export default class GameScene extends Phaser.Scene {
         );
 
 
-        this.slide = this.physics.add.image(this.game.config.width/2, this.game.config.height-120, 'slide')
+        this.slide = this.physics.add.image(this.game.config.width/2, this.game.config.height-60, 'slide')
             .setScale(0.5)
-            .setRotation(-22.5)
+            .setRotation(22.5)
             .setDepth(12);
 
         this.scale = this.physics.add.image((this.game.config.width/2) ,this.game.config.height-90 , 'scaleImg')
             .setScale(0.5, 0.35)
             .setDepth(11);
 
-        this.physics.add.image((this.game.config.width-20) ,this.game.config.height-240 , 'flagImg')
+        this.physics.add.image((this.game.config.width-40) ,this.game.config.height-240 , 'flagImg')
             .setScale(0.5, 0.35)
-            .setRotation()
+            .setFlipX(true)
             .setDepth(11);
 
 
@@ -601,7 +601,7 @@ export default class GameScene extends Phaser.Scene {
      }
 
      hitAtmo(photons) {
-         this.score += 90;
+         this.score += 120;
          this.slide.setPosition( ((this.score*0.5)+this.game.config.width*0.25), this.game.config.height-60);
          this.scoreText.setText(`Score: ${this.score}`);
          photons.destroy();
@@ -689,24 +689,24 @@ export default class GameScene extends Phaser.Scene {
      updateRunner(){
 
         if(this.startMovingRunner && this.showWonGame===false){
-            this.moveRunner(this.runner, 0.25);
+            this.moveRunner(this.runner, 0.5);
             this.bgStartMoving=true;
         }
 
-        if(this.score>1680)
+        if(this.score>1200)
         {
             this.tooCold=true;
             this.stopRunner();
             this.bgStartMoving=false;
         }
-        else if(this.score<=1680 && this.score >= 240 && this.initializeMovement && this.showWonGame===false)
+        else if(this.score<=1200 && this.score >= 720 && this.initializeMovement && this.showWonGame===false)
         {
             this.startMovingRunner=true;
             this.bgStartMoving=true;
             this.tooCold=false;
             this.tooHot=false;
         }
-        else if(this.score<240 && this.score>=0)
+        else if(this.score<720 && this.score>=0)
         {
             this.tooHot=true;
             this.stopRunner();
