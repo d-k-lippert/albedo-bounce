@@ -7,7 +7,7 @@ import LevelTwoScene from "./level-2.js";
 //import cloudImg from "./assets/cloud-sprite.png"
 
 const config = {
-  type: Phaser.AUTO,
+  type: Phaser.CANVAS,
   width: 1920,
   height: 1080,
   scale: {

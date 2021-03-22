@@ -12,6 +12,7 @@ export default class TutorialScene extends Phaser.Scene {
     preload ()
     {
         this.load.video('tutorialVid', "./src/assets/images/tutorialvid.mp4");
+        // this.load.video('tutorialVid', tutVideo);
         console.log("intro works")
 
     }
